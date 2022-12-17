@@ -11,6 +11,7 @@ esphome:
 
 substitutions:
   room: Max Wohnzimmer # Room Name
+  climate_id: climate.max_wz_heizung_smart # The climate entity in Home Assistant
 
 wifi:
   networks:
@@ -91,7 +92,7 @@ sensor:
                 service: climate.set_temperature
                 data:
                   temperature: !lambda "return id(btt_target_temp).state + 0.5;"
-                  entity_id: climate.max_wz_heizung_smart
+                  entity_id: ${climate_id}
 
     on_anticlockwise:
       then:
@@ -109,18 +110,18 @@ sensor:
                   service: climate.set_temperature
                   data:
                     temperature: !lambda "return id(btt_target_temp).state - 0.5;"
-                    entity_id: climate.max_wz_heizung_smart
+                    entity_id: ${climate_id}
 
   - platform: homeassistant
     id: btt_target_temp
-    entity_id: climate.max_wz_heizung_smart
+    entity_id: ${climate_id}
     attribute: temperature
 
 text_sensor:
 
   - platform: homeassistant
     id: btt_heating_state
-    entity_id: climate.max_wz_heizung_smart
+    entity_id: ${climate_id}
     attribute: hvac_action
 
 display:
