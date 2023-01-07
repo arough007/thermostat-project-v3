@@ -1,5 +1,5 @@
 esphome:
-  name: "thermostat-test"
+  name: "wand-thermostat-max-wz" # Name of the ESPHome device
   platform: ESP8266
   board: d1_mini
 
@@ -8,26 +8,36 @@ esphome:
     then:
       - lambda: "id(oled_contrast).publish_state(0.4);"
 
+### Change these to configure the wall thermostat ###
 substitutions:
-  room: Max Wohnzimmer # Room Name
-  climate_id: climate.max_wz_heizung_smart # The climate entity in Home Assistant
+  room: "Test room" # Room Name
+  climate_id: "climate.test_room" # The climate entity in Home Assistant which will be used for checking and setting target temperature
+  temperature_id: "Test room temperature" # sensor.${temperatur_id} will be the temperature sensor in Home Assistant
+  encryption_key: "xxxxxxx" # The encryption key for communicating with Home Assistant
+  ota_password: "xxxxxxx" # The OTA password
+  ds18b20_address: "0xbe012275d68d1028" # This address needs to be replaced with the one from the logs after first flash
+### Change these to configure the wall thermostat ###
 
 wifi:
   networks:
     - ssid: !secret wifi_ssid
       password: !secret wifi_password
-  manual_ip:
-    static_ip: 192.168.2.198
-    gateway: 192.168.2.1
-    subnet: 255.255.255.0
+# My mDNS seems to not work so this is necessary to use the ESPHome Dashboard
+#  manual_ip:
+#    static_ip: 192.168.2.240
+#    gateway: 192.168.2.1
+#    subnet: 255.255.255.0
 
 logger:
   logs:
     sensor: none
-    # dallas.sensor: none
 
 api:
+  encryption:
+    key: ${encryption_key}
+
 ota:
+  password: ${ota_password}
 
 i2c:
   frequency: 400kHz
@@ -61,7 +71,8 @@ sensor:
 
   - platform: dallas
     id: internal_temperature
-    address: 0xf101143d2badaa28
+    address: ${ds18b20_address}
+    name: ${temperature_id}
 
   - platform: rotary_encoder
     id: encoder
