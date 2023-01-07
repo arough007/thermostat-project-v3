@@ -6,7 +6,6 @@ esphome:
   on_boot:
     priority: -100.0
     then:
-      - switch.turn_on: dallas_power
       - lambda: "id(oled_contrast).publish_state(0.4);"
 
 substitutions:
@@ -34,11 +33,6 @@ i2c:
   frequency: 400kHz
 
 switch:
-  - platform: gpio
-    id: dallas_power
-    name: "Dallas Power"
-    pin:
-      number: GPIO03
 
   - platform: template
     id: brightness
