@@ -10,9 +10,9 @@ esphome:
 
 ### Change these to configure the wall thermostat ###
 substitutions:
-  room: "Test room" # Room Name
+  room: "Test room" # Room name
   climate_id: "climate.test_room" # The climate entity in Home Assistant which will be used for checking and setting target temperature
-  temperature_id: "Test room temperature" # sensor.${temperatur_id} will be the temperature sensor in Home Assistant
+  temperature_id: "Test room temperature" # sensor.${temperature_id} will be the temperature sensor in Home Assistant
   encryption_key: "xxxxxxx" # The encryption key for communicating with Home Assistant
   ota_password: "xxxxxxx" # The OTA password
   ds18b20_address: "0xbe012275d68d1028" # This address needs to be replaced with the one from the logs after first flash
