@@ -73,7 +73,7 @@ binary_sensor:
 
 dallas:
   - pin: D3
-    update_interval: 2s
+    update_interval: 15s
 
 sensor:
   - platform: template
