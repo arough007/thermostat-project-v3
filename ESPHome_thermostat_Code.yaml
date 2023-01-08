@@ -7,6 +7,7 @@ esphome:
     priority: -100.0
     then:
       - lambda: "id(oled_contrast).publish_state(0.4);"
+      - script.execute: activate_oled1
 
 ### Change these to configure the wall thermostat ###
 substitutions:
@@ -48,6 +49,10 @@ switch:
     id: brightness
     optimistic: true
 
+  - platform: template
+    id: oled1_state
+    optimistic: true
+
 binary_sensor:
 
   - platform: gpio
@@ -55,11 +60,16 @@ binary_sensor:
     pin:
       number: D4
       inverted: true
-    on_click:
-      - min_length: 1000ms
-        max_length: 20000ms
-        then:
-          - switch.toggle: brightness
+    on_release:
+      then:
+        - if:
+            condition:
+              switch.is_on: oled1_state
+            then:
+              - switch.toggle: brightness
+              - script.execute: activate_oled1
+            else:
+              - script.execute: activate_oled1
 
 dallas:
   - pin: D3
@@ -85,37 +95,46 @@ sensor:
     on_clockwise:
       - if:
           condition:
-            switch.is_on: brightness
+            switch.is_on: oled1_state
           then:
-            - sensor.template.publish:
-                id: oled_contrast
-                state: !lambda "return id(oled_contrast).state + 0.02;"
-            - lambda: |-
-                id(oled1).set_contrast( id(oled_contrast).state );
-          else:
-            - homeassistant.service:
-                service: climate.set_temperature
-                data:
-                  temperature: !lambda "return id(btt_target_temp).state + 0.5;"
-                  entity_id: ${climate_id}
+            - script.execute: activate_oled1
+            - if:
+                condition:
+                  switch.is_on: brightness
+                then:
+                  - sensor.template.publish:
+                      id: oled_contrast
+                      state: !lambda "return id(oled_contrast).state + 0.1;"
+                  - lambda: |-
+                      id(oled1).set_contrast( id(oled_contrast).state );
+                else:
+                  - homeassistant.service:
+                      service: climate.set_temperature
+                      data:
+                        temperature: !lambda "return id(btt_target_temp).state + 0.5;"
+                        entity_id: ${climate_id}
 
     on_anticlockwise:
-      then:
-        - if:
-            condition:
-              switch.is_on: brightness
-            then:
-              - sensor.template.publish:
-                  id: oled_contrast
-                  state: !lambda "return id(oled_contrast).state - 0.02;"
-              - lambda: |-
-                  id(oled1).set_contrast( id(oled_contrast).state);
-            else:
-              - homeassistant.service:
-                  service: climate.set_temperature
-                  data:
-                    temperature: !lambda "return id(btt_target_temp).state - 0.5;"
-                    entity_id: ${climate_id}
+      - if:
+          condition:
+            switch.is_on: oled1_state
+          then:
+            - script.execute: activate_oled1
+            - if:
+                condition:
+                  switch.is_on: brightness
+                then:
+                  - sensor.template.publish:
+                      id: oled_contrast
+                      state: !lambda "return id(oled_contrast).state - 0.1;"
+                  - lambda: |-
+                      id(oled1).set_contrast( id(oled_contrast).state);
+                else:
+                  - homeassistant.service:
+                      service: climate.set_temperature
+                      data:
+                        temperature: !lambda "return id(btt_target_temp).state - 0.5;"
+                        entity_id: ${climate_id}
 
   - platform: homeassistant
     id: btt_target_temp
@@ -165,3 +184,16 @@ font:
   - file: "_fonts/refsan.ttf"
     id: font3
     size: 13
+
+script:
+  - id: activate_oled1
+    mode: restart
+    then:
+      - lambda: |-
+          id(oled1).turn_on();
+          id(oled1_state).turn_on();
+      - delay: 3s
+      - lambda: |-
+          id(oled1).turn_off();
+          id(oled1_state).turn_off();
+          id(brightness).turn_off();
