@@ -83,6 +83,10 @@ sensor:
     id: internal_temperature
     address: ${ds18b20_address}
     name: ${temperature_id}
+    # TODO Move offset to configuration block.
+    # TODO For now I can't figure out how to do proper float casting.
+    filters:
+      - offset: 0.0
 
   - platform: rotary_encoder
     id: encoder
